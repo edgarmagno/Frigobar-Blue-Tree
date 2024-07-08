@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consumo de Frigobar</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -19,7 +19,15 @@
     <div class="container">
         <div id="item-list"></div>
         <div id="total">Total: R$ 0.00</div>
-        <button id="share-button" onclick="shareOnWhatsApp()">Compartilhar no WhatsApp</button>
+    </div>
+
+    <div class="fixed-footer" id="added-items-footer">
+
+        <div id="added-items-list"> sassa </div>
+        <button class="share-button" onclick="shareOnWhatsApp()">
+            <img src="https://static-00.iconduck.com/assets.00/share-icon-2048x1911-60w04qpe.png" alt="WhatsApp">
+            
+        </button>
     </div>
 
     <script>
@@ -41,6 +49,7 @@
 
         const itemList = document.getElementById('item-list');
         const totalDiv = document.getElementById('total');
+        const addedItemsList = document.getElementById('added-items-list');
         const itemQuantities = {};
 
         function updateTotal() {
@@ -50,11 +59,12 @@
                 const price = items.find(i => i.name === item).price;
                 total += quantity * price;
             }
-            totalDiv.textContent = `*Total: R$ ${total.toFixed(2)}*`;
+            totalDiv.textContent = `Total: R$ ${total.toFixed(2)}`;
         }
 
         function updateItemList() {
             itemList.innerHTML = '';
+            
             for (const item of items) {
                 if (!itemQuantities[item.name]) itemQuantities[item.name] = 0;
                 const row = document.createElement('div');
@@ -71,12 +81,24 @@
                 itemList.appendChild(row);
             }
             updateTotal();
+            updateAddedItemsList();
         }
 
         function updateQuantity(itemName, change) {
             itemQuantities[itemName] += change;
             if (itemQuantities[itemName] < 0) itemQuantities[itemName] = 0;
             updateItemList();
+        }
+
+        function updateAddedItemsList() {
+            addedItemsList.innerHTML = '';
+            for (const item in itemQuantities) {
+                if (itemQuantities[item] > 0) {
+                    const listItem = document.createElement('div');
+                    listItem.textContent = `${item}: ${itemQuantities[item]}`;
+                    addedItemsList.appendChild(listItem);
+                }
+            }
         }
 
         function shareOnWhatsApp() {
