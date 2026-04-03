@@ -1,130 +1,155 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frigobar Blue Tree</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frigobar</title>
+
+<link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-    <header>
-        <h2>Número do Apto:</h2>
-        <form id="form-apartamento">
-            <label for="num-apartamento"></label>
-            <input type="text" id="num-apartamento" name="num-apartamento" required>
-        </form>
-    </header>
+<div class="app">
 
-    <div class="container">
-        <div id="item-list"></div>
-        <div id="total">Total: R$ 0.00</div>
+<header class="top">
+    <div class="hotel-name">Hotel: Blue Tree Premium Manaus</div>
+    <h2>Frigobar</h2>
+    <input type="text" id="num-apartamento" placeholder="Apto">
+</header>
+
+<main class="list" id="item-list"></main>
+
+<footer class="bottom">
+
+    <div class="summary-header" onclick="toggleSummary()">
+        <span>Consumo</span>
+        <span id="toggle-text">Mostrar</span>
     </div>
 
-    <div class="fixed-footer" id="added-items-footer">
-
-        <div id="added-items-list"> sassa </div>
-        <button class="share-button" onclick="shareOnWhatsApp()">
-            <img src="https://static-00.iconduck.com/assets.00/share-icon-2048x1911-60w04qpe.png" alt="WhatsApp">
-            
-        </button>
+    <div id="summary-content" class="hidden">
+        <div id="added-items-list" class="summary-items"></div>
     </div>
 
-    <script>
-        const items = [
-            { name: 'Lata Água Sem Gás', price: 12.00 },
-            { name: 'Lata Água Com Gás', price: 12.00 },
-            { name: 'Refrigerante', price: 10.00 },
-            { name: 'Cerveja Premium', price: 15.00 },
-            { name: 'Achocolatado', price: 9.00 },
-            { name: 'Água de Côco', price: 9.00 },
-            { name: 'Batata Pringles', price: 18.00 },
-            { name: 'Barra de Cereais', price: 8.00 },
-            { name: 'Castanha de Caju', price: 11.00 },
-            { name: 'Chocolate Pequeno', price: 9.00 },
-            { name: 'Chocolate Especial', price: 15.00 },
-            { name: 'Chiclete', price: 7.00 },
-            { name: 'Fini', price: 6.00 },
-        ];
+    <div id="total">R$ 0,00</div>
 
-        const itemList = document.getElementById('item-list');
-        const totalDiv = document.getElementById('total');
-        const addedItemsList = document.getElementById('added-items-list');
-        const itemQuantities = {};
+    <button class="send-btn" onclick="shareOnWhatsApp()">
+        Enviar Consumo
+    </button>
 
-        function updateTotal() {
-            let total = 0;
-            for (const item in itemQuantities) {
-                const quantity = itemQuantities[item];
-                const price = items.find(i => i.name === item).price;
-                total += quantity * price;
-            }
-            totalDiv.textContent = `Total: R$ ${total.toFixed(2)}`;
+</footer>
+
+</div>
+
+<script>
+const items = [
+    { name: 'Água Sem Gás', price: 12 },
+    { name: 'Água Com Gás', price: 12 },
+    { name: 'Refrigerante', price: 10 },
+    { name: 'Cerveja Premium', price: 15 },
+    { name: 'Achocolatado', price: 9 },
+    { name: 'Água de Coco', price: 9 },
+    { name: 'Batata Chips', price: 18 },
+    { name: 'Barra de Cereais', price: 8 },
+    { name: 'Castanha de Caju', price: 11 },
+    { name: 'Chocolate Pequeno', price: 9 },
+    { name: 'Chocolate Especial', price: 15 },
+    { name: 'Chiclete', price: 7 },
+    { name: 'Fini', price: 6 },
+];
+
+const itemList = document.getElementById('item-list');
+const totalDiv = document.getElementById('total');
+const addedItemsList = document.getElementById('added-items-list');
+
+const itemQuantities = {};
+items.forEach(item => itemQuantities[item.name] = 0);
+
+/* RENDER */
+function renderItems() {
+    itemList.innerHTML = '';
+
+    items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+
+        row.innerHTML = `
+            <div>
+                <div class="item-name">${item.name}</div>
+                <div class="item-price">R$ ${item.price.toFixed(2)}</div>
+            </div>
+
+            <div class="quantity-controls">
+                <button class="quantity-button" onclick="changeQty('${item.name}', -1)">-</button>
+                <span>${itemQuantities[item.name]}</span>
+                <button class="quantity-button" onclick="changeQty('${item.name}', 1)">+</button>
+            </div>
+        `;
+
+        itemList.appendChild(row);
+    });
+
+    updateSummary();
+}
+
+function changeQty(name, value) {
+    itemQuantities[name] += value;
+    if (itemQuantities[name] < 0) itemQuantities[name] = 0;
+    renderItems();
+}
+
+/* RESUMO */
+function updateSummary() {
+    let total = 0;
+    addedItemsList.innerHTML = '';
+
+    for (let item in itemQuantities) {
+        if (itemQuantities[item] > 0) {
+            const price = items.find(i => i.name === item).price;
+            total += price * itemQuantities[item];
+
+            const el = document.createElement('div');
+            el.textContent = `${item} x${itemQuantities[item]}`;
+            addedItemsList.appendChild(el);
         }
+    }
 
-        function updateItemList() {
-            itemList.innerHTML = '';
-            
-            for (const item of items) {
-                if (!itemQuantities[item.name]) itemQuantities[item.name] = 0;
-                const row = document.createElement('div');
-                row.className = 'item-row';
-                row.innerHTML = `
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-price">R$ ${item.price.toFixed(2)}</div>
-                    <div class="quantity-controls">
-                        <button class="quantity-button" onclick="updateQuantity('${item.name}', -1)">-</button>
-                        <span>${itemQuantities[item.name]}</span>
-                        <button class="quantity-button" onclick="updateQuantity('${item.name}', 1)">+</button>
-                    </div>
-                `;
-                itemList.appendChild(row);
-            }
-            updateTotal();
-            updateAddedItemsList();
+    totalDiv.textContent = `R$ ${total.toFixed(2)}`;
+}
+
+/* TOGGLE */
+function toggleSummary() {
+    const content = document.getElementById('summary-content');
+    const text = document.getElementById('toggle-text');
+
+    content.classList.toggle('hidden');
+    text.textContent = content.classList.contains('hidden') ? 'Mostrar' : 'Ocultar';
+}
+
+/* WHATSAPP */
+function shareOnWhatsApp() {
+    const apto = document.getElementById('num-apartamento').value;
+
+    if (!apto) {
+        alert("Informe o apartamento");
+        return;
+    }
+
+    let msg = `Apto: ${apto}\n\n`;
+
+    for (let item in itemQuantities) {
+        if (itemQuantities[item] > 0) {
+            msg += `${item} x${itemQuantities[item]}\n`;
         }
+    }
 
-        function updateQuantity(itemName, change) {
-            itemQuantities[itemName] += change;
-            if (itemQuantities[itemName] < 0) itemQuantities[itemName] = 0;
-            updateItemList();
-        }
+    msg += `\nTotal: ${totalDiv.textContent}`;
+   
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
 
-        function updateAddedItemsList() {
-            addedItemsList.innerHTML = '';
-            for (const item in itemQuantities) {
-                if (itemQuantities[item] > 0) {
-                    const listItem = document.createElement('div');
-                    listItem.textContent = `${item}: ${itemQuantities[item]}`;
-                    addedItemsList.appendChild(listItem);
-                }
-            }
-        }
-
-        function shareOnWhatsApp() {
-            const aptoNumber = document.getElementById('num-apartamento').value;
-            if (!aptoNumber) {
-                alert('Por favor, insira o número do apartamento.');
-                return;
-            }
-            let message = `Apto: ${aptoNumber}\n`;
-            for (const item in itemQuantities) {
-                if (itemQuantities[item] > 0) {
-                    message += `${item}: ${itemQuantities[item]}\n`;
-                }
-            }
-            message += totalDiv.textContent;
-            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
-        }
-
-        document.getElementById('form-apartamento').addEventListener('submit', function(event) {
-            event.preventDefault();
-        });
-
-        updateItemList();
-    </script>
+renderItems();
+</script>
 
 </body>
 </html>
-
